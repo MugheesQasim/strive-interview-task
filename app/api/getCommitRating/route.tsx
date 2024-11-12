@@ -24,6 +24,7 @@ const hardcodedResponse = {
 const fetchCommitData = async (owner: string, repo: string, sha: string) => {
   const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits/${sha}`);
   const data = await response.json();
+  console.log("Data:" + data);
   return data;
 };
 
@@ -61,7 +62,7 @@ const analyzeCodeQuality = async (code: string) => {
 const getCommitRatings = async (owner: string, repo: string, sha: string) => {
   try {
     const commitData = await fetchCommitData(owner, repo, sha);
-
+    console.log(commitData);
     const fileRatings = await Promise.all(commitData.files.map(async (file: any) => {
       const fileContent = await fetchFileContent(file.blob_url.replace("github.com", "raw.githubusercontent.com"));
 
@@ -85,10 +86,10 @@ export async function POST(req: NextRequest) {
 
   try {
 
-    const fileRatings = await getCommitRatings(repoOwner as string, repoName as string, sha as string);
+    const commitRatings = await getCommitRatings(repoOwner as string, repoName as string, sha as string);
 
     return NextResponse.json({
-      fileRatings
+      commitRatings
     });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to analyze code' }, { status: 500 });

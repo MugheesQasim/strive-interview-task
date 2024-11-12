@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { connectToDatabase, disconnectDatabase } from '../../lib/mongoose';
 import { Octokit } from '@octokit/rest';
 import { ChatOpenAI } from '@langchain/openai';
+import { PromptResult } from '@/app/models/PromptResult';
+import { insertDummyData } from '@/app/files/insertDummyData';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const OPENAI_TOKEN = process.env.OPENAI_API_KEY;
@@ -121,11 +124,35 @@ export async function POST(req: NextRequest) {
     const { repoOwner, repoName, sha } = await req.json();
 
     try {
+        // await insertDummyData();
+        // delay(3000);
+        await connectToDatabase();
+
+        const existingResult = await PromptResult.findOne({ sha });
+
+        if (existingResult) {
+            console.log("Result found in db");
+            return NextResponse.json({
+                score: existingResult.result.score,
+                reasoning: existingResult.result.reasoning,
+            });
+        }
+
         const blobResponse: GitHubBlobResponse = await fetchFileFromGitHub(repoOwner, repoName, sha);
 
         const decodedCode = Buffer.from(blobResponse.content, 'base64').toString('utf-8');
 
         const analysisResult = await analyzeCodeQuality(decodedCode);
+
+        const newResult = new PromptResult({
+            sha,
+            result: {
+                score: analysisResult.score,
+                reasoning: analysisResult.reasoning,
+            },
+        });
+
+        await newResult.save();
 
         return NextResponse.json({
             score: analysisResult.score,
@@ -133,5 +160,7 @@ export async function POST(req: NextRequest) {
         });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to analyze code' }, { status: 500 });
+    } finally {
+        await disconnectDatabase();
     }
 }

@@ -1,67 +1,95 @@
 "use client"
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import {useSearchParams} from 'next/navigation';
 
-const Result: React.FC = () => {
+interface File {
+  filename: string;
+  status: 'modified' | 'added' | 'removed';
+}
+
+interface Result {
+  files: File[];
+  score?: number;
+  reasoning?: string;
+  error?: string;
+}
+
+const ResultPage: React.FC = () => {
   const router = useRouter();
-  const { repoUrl, sha } = router.query;
-  const [ratings, setRatings] = useState<any[]>([]);
-  const [selectedFile, setSelectedFile] = useState<any | null>(null);
+  const searchParams = useSearchParams();
+  const repoUrl = searchParams.get('repoUrl');
+  const sha = searchParams.get('sha');
+  
+  const [result, setResult] = useState<Result | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (repoUrl && sha) {
-      const fetchRatings = async () => {
-        const [owner, repo] = (repoUrl as string).split("/").slice(-2);
-
-        const response = await fetch(`/api/getCommitRatings?owner=${owner}&repo=${repo}&sha=${sha}`);
-        const data = await response.json();
-
-        setRatings(data);
-        setSelectedFile(data[0]);
-      };
-
-      fetchRatings();
+    if (sha && repoUrl) {
+      fetchCommitDetails(repoUrl as string, sha as string);
     }
-  }, [repoUrl, sha]);
+  }, [sha, repoUrl]);
 
-  const handleFileSelect = (file: any) => {
-    setSelectedFile(file);
+  const fetchCommitDetails = async (repoUrl: string, sha: string) => {
+    try {
+      const response = await fetch(`/api/getCommitDetails?repoUrl=${repoUrl}&sha=${sha}`);
+      const data = await response.json();
+
+      setResult(data);
+    } catch (error) {
+      setResult({
+        files: [],
+        error: 'Failed to fetch commit details or analyze code.',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div className="flex">
-      <div className="w-1/4 p-4 border-r border-gray-300">
-        <h2 className="text-xl font-semibold mb-4">Files Changed</h2>
-        <ul className="space-y-2">
-          {ratings.map((file) => (
-            <li
-              key={file.filename}
-              className="cursor-pointer text-blue-500 hover:underline"
-              onClick={() => handleFileSelect(file)}
-            >
-              {file.filename}
-            </li>
-          ))}
-        </ul>
-      </div>
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-      <div className="w-3/4 p-4">
-        {selectedFile ? (
-          <>
-            <h2 className="text-xl font-semibold">{selectedFile.filename}</h2>
-            <p className="mt-4">
-              <strong>Rating:</strong> {selectedFile.rating}
-            </p>
-            <p className="mt-2">
-              <strong>Reasoning:</strong> {selectedFile.reasoning}
-            </p>
-          </>
-        ) : (
-          <p>Select a file to see its rating.</p>
-        )}
-      </div>
+  if (!result) {
+    return <div>Error: No result data available.</div>;
+  }
+
+  return (
+    <div className="w-full max-w-4xl mx-auto p-4">
+      <h1 className="text-3xl font-semibold mb-4 text-center">Commit Details</h1>
+      
+      {result.error ? (
+        <div className="text-red-500 mb-4">{result.error}</div>
+      ) : (
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold">Changed Files</h2>
+          <ul>
+            {result.files.map((file, index) => (
+              <li key={index} className="mb-2">
+                <div className="flex justify-between items-center">
+                  <span>{file.filename}</span>
+                  <span className="text-sm text-gray-500">{file.status}</span>
+                </div>
+                {!result.error && (
+                  <div className="mt-2 p-2 bg-gray-100 rounded-md">
+                    <p>File content will be here</p>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {!result.error && result.score && result.reasoning && (
+        <div className="mt-6 p-4 bg-green-100 border border-green-300 rounded-md">
+          <h2 className="font-semibold text-lg">Analysis Result</h2>
+          <p><strong>Score:</strong> {result.score}</p>
+          <p><strong>Reasoning:</strong> {result.reasoning}</p>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Result;
+export default ResultPage;
