@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@langchain/core": "^0.3.18",
+    "@langchain/mistralai": "^0.1.1",
     "@langchain/openai": "^0.3.12",
     "@octokit/rest": "^21.0.2",
     "axios": "^1.7.7",
@@ -18,9 +20,10 @@
     "next": "15.0.3",
     "node-fetch": "^3.3.2",
     "openai": "^4.71.1",
-    "react": "19.0.0-rc-66855b96-20241106",
-    "react-dom": "19.0.0-rc-66855b96-20241106",
-    "react-icons": "^5.3.0"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.3.0",
+    "react-markdown": "^9.0.1"
   },
   "devDependencies": {
     "@types/mongoose": "^5.11.96",

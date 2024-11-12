@@ -11,17 +11,17 @@ const Commits: React.FC = () => {
     const [sha, setSha] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [result, setResult] = useState<{ score: number; reasoning: string } | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
-        setResult(null);
 
         const regex = /github\.com\/([^\/]+)\/([^\/]+)/;
         const match = repoUrl.match(regex);
 
+        console.log(match);
+        
         if (!match) {
             setError('Invalid GitHub URL format');
             setLoading(false);
@@ -32,20 +32,7 @@ const Commits: React.FC = () => {
         const repoName = match[2];
 
         try {
-            const response = await fetch('/api/getCommitRating', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ repoOwner, repoName, sha }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Error fetching code analysis');
-            }
-
-            const data = await response.json();
-            setResult(data);
-
-            router.push(`/commits/result?repoUrl=${encodeURIComponent(repoUrl)}&sha=${encodeURIComponent(sha)}&score=${data.score}&reasoning=${encodeURIComponent(data.reasoning)}`);
+            router.push(`/commits/result?repoOwner=${repoOwner}&repoName=${repoName}&sha=${sha}`);
         } catch (err) {
             setError((err as Error).message);
         } finally {
@@ -58,7 +45,7 @@ const Commits: React.FC = () => {
             <div>
                 <BackButton />
             </div>
-                <Heading text="Commits"/>
+            <Heading text="Commits" />
             <div className="w-full max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg">
                 <header className="row-start-1 text-center">
                     <p className="text-gray-600 mt-2">Provide the repository URL and commit SHA ref id</p>
@@ -103,13 +90,6 @@ const Commits: React.FC = () => {
                 </form>
 
                 {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
-                {result && (
-                    <div className="mt-6 p-4 bg-green-100 border border-green-300 rounded-md">
-                        <h2 className="font-semibold text-lg">Analysis Result</h2>
-                        <p><strong>Score:</strong> {result.score}</p>
-                        <p><strong>Reasoning:</strong> {result.reasoning}</p>
-                    </div>
-                )}
             </div>
         </div>
     );

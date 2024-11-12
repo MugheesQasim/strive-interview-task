@@ -1,32 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Octokit } from '@octokit/rest';
-import { ChatOpenAI } from '@langchain/openai';
+import { ChatMistralAI } from "@langchain/mistralai";
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const OPENAI_TOKEN = process.env.OPENAI_API_KEY;
 
-const hardcodedResponse = {
-  choices: [
-    {
-      text: `### Code Analysis for Quality, Readability, and Efficiency
+interface MistralMessage {
+  content: string;
+}
 
-#### **Score: 4/10**
-
-#### **Reasoning:**
-
-##### **Quality:**
-- **Component Design (2/10):** 
-- The code follows a modular `
-    }
-  ]
-};
+const octokit = new Octokit({
+  auth: GITHUB_TOKEN,
+});
 
 const fetchCommitData = async (owner: string, repo: string, sha: string) => {
-  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits/${sha}`);
-  const data = await response.json();
-  console.log("Data:" + data);
-  return data;
+  try {
+    const { data } = await octokit.request('GET /repos/{owner}/{repo}/commits/{ref}', {
+      owner: owner,
+      repo: repo,
+      ref: sha,
+      headers: {
+        'X-GitHub-Api-Version': '2022-11-28'
+      }
+    })
+
+    return {
+      sha: data.sha,
+      commitMessage: data.commit.message,
+      author: data.commit.author,
+      files: data.files,
+    };
+  } catch (error) {
+    console.error("Error fetching commit data:", error);
+    throw error;
+  }
 };
+
 
 const fetchFileContent = async (rawUrl: string) => {
   const response = await fetch(rawUrl);
@@ -34,37 +42,44 @@ const fetchFileContent = async (rawUrl: string) => {
   return data;
 };
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 const analyzeCodeQuality = async (code: string) => {
   const prompt = `Analyze the following code for quality, readability, and efficiency. Give a score out of 10 and explain your reasoning.\n\n${code}`;
 
-  const chatModel = new ChatOpenAI({
-    apiKey: OPENAI_TOKEN
+  const chatModel = new ChatMistralAI({
+    model: "mistral-large-latest",
+    temperature: 0,
+    maxRetries: 2,
   });
 
-  const response = chatModel.invoke(prompt);
+  const response = await chatModel.invoke(prompt);
 
-  await delay(2000);
+  const data = response as MistralMessage;
 
-  const scoreMatch = hardcodedResponse.choices[0].text.trim().match(/Score:\s*(\d+)\/10/i);
+  const qualityMatch = data.content.trim().match(/Quality:\s*(\d+)\/10/i);
+  const readabilityMatch = data.content.trim().match(/Readability:\s*(\d+)\/10/i);
+  const efficiencyMatch = data.content.trim().match(/Efficiency:\s*(\d+)\/10/i);
 
-  const score = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
+  const qualityScore = qualityMatch ? parseInt(qualityMatch[1], 10) : 0;
+  const readabilityScore = readabilityMatch ? parseInt(readabilityMatch[1], 10) : 0;
+  const efficiencyScore = efficiencyMatch ? parseInt(efficiencyMatch[1], 10) : 0;
+
+  const overallScore = ((qualityScore + readabilityScore + efficiencyScore) / 3).toFixed(1);
 
   return {
-    score: score,
-    reasoning: hardcodedResponse.choices[0].text.trim()
+    score: overallScore,
+    reasoning: data.content
   };
-
-  // return (await response).content.toString().trim();
 };
 
 const getCommitRatings = async (owner: string, repo: string, sha: string) => {
   try {
     const commitData = await fetchCommitData(owner, repo, sha);
-    console.log(commitData);
+    if (!commitData.files || commitData.files.length === 0) {
+      throw new Error("No files found in the commit.");
+    }
+
     const fileRatings = await Promise.all(commitData.files.map(async (file: any) => {
-      const fileContent = await fetchFileContent(file.blob_url.replace("github.com", "raw.githubusercontent.com"));
+      const fileContent = await fetchFileContent(file.raw_url);
 
       const rating = await analyzeCodeQuality(fileContent);
 

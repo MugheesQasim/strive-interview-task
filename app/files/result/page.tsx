@@ -1,11 +1,11 @@
-"use client"
+"use client";
+
 import { useSearchParams } from 'next/navigation';
 import BackButton from '../../components/BackButton';
-import { useRouter } from 'next/navigation';
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 const Result: React.FC = () => {
-    const router = useRouter();
     const searchParams = useSearchParams();
 
     const repoUrl = searchParams.get('repoUrl');
@@ -17,13 +17,9 @@ const Result: React.FC = () => {
         return <p>Loading...</p>;
     }
 
-    const handleBackClick = () => {
-        router.back();
-    };
-
     return (
         <div>
-            <BackButton/>
+            <BackButton />
             <div className="w-full max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
                 <h1 className="text-2xl font-bold text-center mb-4 text-black">Code Analysis Result</h1>
 
@@ -44,11 +40,12 @@ const Result: React.FC = () => {
 
                 <div className="mb-4">
                     <strong>Reasoning:</strong>
-                    <p className="whitespace-pre-wrap break-words">{reasoning}</p>
+                    <ReactMarkdown className="whitespace-pre-wrap break-words">
+                        {reasoning}
+                    </ReactMarkdown>
                 </div>
             </div>
         </div>
-
     );
 };
 

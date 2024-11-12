@@ -13,8 +13,7 @@ export const connectToDatabase = async () => {
     await client.connect();
     db = client.db('testDB');
   }
-
-  console.log("MongoDB connected");
+  
   return db;
 };
 

@@ -1,7 +1,7 @@
 "use client"
+
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import {useSearchParams} from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 interface File {
   filename: string;
@@ -16,23 +16,34 @@ interface Result {
 }
 
 const ResultPage: React.FC = () => {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const repoUrl = searchParams.get('repoUrl');
+
+  const repoOwner = searchParams.get('repoOwner');
+  const repoName = searchParams.get('repoName');
   const sha = searchParams.get('sha');
-  
+
   const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (sha && repoUrl) {
-      fetchCommitDetails(repoUrl as string, sha as string);
+    if (repoOwner && repoName && sha) {
+      fetchCommitDetails(repoOwner as string, repoName as string, sha as string);
     }
-  }, [sha, repoUrl]);
+  }, [repoOwner, repoName, sha]);
 
-  const fetchCommitDetails = async (repoUrl: string, sha: string) => {
+  const fetchCommitDetails = async (repoOwner: string, repoName: string, sha: string) => {
     try {
-      const response = await fetch(`/api/getCommitDetails?repoUrl=${repoUrl}&sha=${sha}`);
+      const response = await fetch('/api/getCommitRating', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          repoOwner,
+          repoName,
+          sha,
+        }),
+      });
       const data = await response.json();
 
       setResult(data);
@@ -57,7 +68,7 @@ const ResultPage: React.FC = () => {
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       <h1 className="text-3xl font-semibold mb-4 text-center">Commit Details</h1>
-      
+
       {result.error ? (
         <div className="text-red-500 mb-4">{result.error}</div>
       ) : (
