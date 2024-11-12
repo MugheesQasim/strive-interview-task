@@ -32,7 +32,7 @@ const Commits: React.FC = () => {
         const repoName = match[2];
 
         try {
-            const response = await fetch('/api/analyzeCode', {
+            const response = await fetch('/api/getCommitRating', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ repoOwner, repoName, sha }),
@@ -45,8 +45,7 @@ const Commits: React.FC = () => {
             const data = await response.json();
             setResult(data);
 
-            // After the analysis, navigate to the result page
-            router.push(`/result?repoUrl=${encodeURIComponent(repoUrl)}&sha=${encodeURIComponent(sha)}&score=${data.score}&reasoning=${encodeURIComponent(data.reasoning)}`);
+            router.push(`/commits/result?repoUrl=${encodeURIComponent(repoUrl)}&sha=${encodeURIComponent(sha)}&score=${data.score}&reasoning=${encodeURIComponent(data.reasoning)}`);
         } catch (err) {
             setError((err as Error).message);
         } finally {
@@ -81,7 +80,7 @@ const Commits: React.FC = () => {
                     </div>
 
                     <div className="mb-4">
-                        <label htmlFor="sha" className="block text-sm font-medium text-gray-700">File SHA</label>
+                        <label htmlFor="sha" className="block text-sm font-medium text-gray-700">Commit SHA</label>
                         <input
                             type="text"
                             id="sha"

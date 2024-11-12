@@ -1,6 +1,6 @@
 "use client"
 import { useSearchParams } from 'next/navigation';
-import BackButton from '../components/BackButton';
+import BackButton from '../../components/BackButton';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 

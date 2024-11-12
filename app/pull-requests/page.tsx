@@ -78,7 +78,7 @@ const PullRequests: React.FC = () => {
                     </div>
 
                     <div className="mb-4">
-                        <label htmlFor="sha" className="block text-sm font-medium text-gray-700">File SHA</label>
+                        <label htmlFor="sha" className="block text-sm font-medium text-gray-700">Pull Request</label>
                         <input
                             type="text"
                             id="sha"
@@ -101,13 +101,6 @@ const PullRequests: React.FC = () => {
                 </form>
 
                 {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
-                {result && (
-                    <div className="mt-6 p-4 bg-green-100 border border-green-300 rounded-md">
-                        <h2 className="font-semibold text-lg">Analysis Result</h2>
-                        <p><strong>Score:</strong> {result.score}</p>
-                        <p><strong>Reasoning:</strong> {result.reasoning}</p>
-                    </div>
-                )}
             </div>
         </div>
     );

@@ -32,7 +32,7 @@ const Files: React.FC = () => {
         const repoName = match[2];
 
         try {
-            const response = await fetch('/api/analyzeCode', {
+            const response = await fetch('/api/getFileRating', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ repoOwner, repoName, sha }),
@@ -45,8 +45,7 @@ const Files: React.FC = () => {
             const data = await response.json();
             setResult(data);
 
-            // After the analysis, navigate to the result page
-            router.push(`/result?repoUrl=${encodeURIComponent(repoUrl)}&sha=${encodeURIComponent(sha)}&score=${data.score}&reasoning=${encodeURIComponent(data.reasoning)}`);
+            router.push(`/files/result?repoUrl=${encodeURIComponent(repoUrl)}&sha=${encodeURIComponent(sha)}&score=${data.score}&reasoning=${encodeURIComponent(data.reasoning)}`);
         } catch (err) {
             setError((err as Error).message);
         } finally {
@@ -104,13 +103,6 @@ const Files: React.FC = () => {
                 </form>
 
                 {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
-                {result && (
-                    <div className="mt-6 p-4 bg-green-100 border border-green-300 rounded-md">
-                        <h2 className="font-semibold text-lg">Analysis Result</h2>
-                        <p><strong>Score:</strong> {result.score}</p>
-                        <p><strong>Reasoning:</strong> {result.reasoning}</p>
-                    </div>
-                )}
             </div>
         </div>
     );
