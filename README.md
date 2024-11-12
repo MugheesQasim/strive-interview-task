@@ -1,8 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Introduction
+### Problem: 
+Code quality is essential for creating maintainable, efficient, and error-free software. High quality code reduces makes it easier to extend or modify features without breaking existing functionality. Clean, well-documented code enhances readability and prevents hair-pulling moments during debugging.
+### Solution:
+What if there is a web app which will automatically fetch code from your git repo and give you a rating of your code quality and a bonus reasoning also? Well, this app is exactly doing this. There are 3 options:
+
+Option 1: You can either give a file sha and it will fetch the code from the file, and provide you with a rating. 
+
+Option 2: You can provide a commit id and it will fetch all the files and show you the code quality of all the files in a user friendly UI.
+
+Option 3: You can provide a Pull Request Id and it will fetch all the related files and provide you their code quality in the result UI. 
+
+
+## Technologies
+FrontEnd: Next.JS
+
+BackEnd: Next.JS
+
+Database: MongoDB
+
+Apis: GitHub, OpenAI
 
 ## Getting Started
+Step 1: Create a .env file on your local. Provide your GitHub and OpenAI tokens there. You can get tokens from the following links:
 
-First, run the development server:
+[GitHub Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token)
+
+[OpenAI Token Documentation](https://platform.openai.com/docs/api-reference/authentication)
+
+Step 2: Install dependencies using the following command:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
+
+Step 3: Run the development server on your local:
 
 ```bash
 npm run dev
@@ -16,18 +53,34 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Time Frame
+~10-12 hours
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+~1 hour    ->  understanding the requirements and designing an architecture
 
-## Learn More
+1-2 hours  ->  going through documentation
 
-To learn more about Next.js, take a look at the following resources:
+4 hours    ->  development
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4-5 hours  ->  debugging and testing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Engineering
+FrontEnd: 
+
+The frontend is intuitive and can be tested after running the project locally. I am using 3 options in the home page. Each option directs to a new page showing a form to the user. After submitting the report, the user will be redirected to the result page. Every option has a different result page. As the sha of commits and ids of Pull Requests will have multiple files, so the result pages of these options will contain a left box where user can select the file and a right one where the user can see the rating provided by the openai api for the selected file.
+
+BackEnd: 
+
+The backend is made using the next.js as well. The apis are separate for each option.
+Database: There are 2 possibilites to use MongoDB here. One can be to store all the results after the query using sha as the key in the form of history which user can see anytime just like the ChatGPT history feature. Other possibility is to increase performance. For example, if the user makes a same query again, the code should not make another prompt request to the openai api because openai api charges for the tokens. Instead, the code will fetch the same result from the MongoDB as the sha will be same.
+
+Apis: 
+
+GitHub api is being used to fetch the code from the repository automatically.
+OpenAI api is being used to give it the prompt and fetch the result to show it to the user.
+
+Both approaches are using the token based approach which will be provided using the .env file.
 
 ## Deploy on Vercel
 
