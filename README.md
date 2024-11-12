@@ -21,11 +21,17 @@ Database: MongoDB
 Apis: GitHub, OpenAI
 
 ## Getting Started
-Step 1: Create a .env file on your local. Provide your GitHub and OpenAI tokens there. You can get tokens from the following links:
+Step 1: Create a .env file on your local. Provide your GitHub and Mistral AI tokens there. You can get tokens from the following links:
 
 [GitHub Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token)
 
-[OpenAI Token Documentation](https://platform.openai.com/docs/api-reference/authentication)
+[Mistral AI Token](https://docs.aicontentlabs.com/articles/mistral-ai-api-key/)
+
+These env variables need to be added (Add tokens without single quotations):
+
+**`GITHUB_TOKEN`**='replace_your_github_token_here'
+
+**`MISTRAL_API_KEY`**='replace_your_mistral_token_here'
 
 Step 2: Install dependencies using the following command:
 
@@ -54,13 +60,13 @@ bun dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Time Frame
-~10-12 hours
+~10-13 hours
 
 ~1 hour    ->  understanding the requirements and designing an architecture
 
 1-2 hours  ->  going through documentation
 
-4 hours    ->  development
+5 hours    ->  development
 
 4-5 hours  ->  debugging and testing
 
