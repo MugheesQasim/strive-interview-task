@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase, disconnectDatabase } from '../../lib/mongoose';
+import { connectToDatabase, disconnectDatabase } from '../../lib/mongoDbConnection';
 import { Octokit } from '@octokit/rest';
 import { ChatOpenAI } from '@langchain/openai';
-import { PromptResult } from '@/app/models/PromptResult';
-import { insertDummyData } from '@/app/files/insertDummyData';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const OPENAI_TOKEN = process.env.OPENAI_API_KEY;
@@ -124,14 +122,13 @@ export async function POST(req: NextRequest) {
     const { repoOwner, repoName, sha } = await req.json();
 
     try {
-        // await insertDummyData();
-        // delay(3000);
-        await connectToDatabase();
+        const db = await connectToDatabase();
 
-        const existingResult = await PromptResult.findOne({ sha });
+        const collection = db.collection('promptResult');
+
+        const existingResult = await collection.findOne({ sha });
 
         if (existingResult) {
-            console.log("Result found in db");
             return NextResponse.json({
                 score: existingResult.result.score,
                 reasoning: existingResult.result.reasoning,
@@ -144,7 +141,7 @@ export async function POST(req: NextRequest) {
 
         const analysisResult = await analyzeCodeQuality(decodedCode);
 
-        const newResult = new PromptResult({
+        const newResult = await collection.insertOne({
             sha,
             result: {
                 score: analysisResult.score,
@@ -152,15 +149,15 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        await newResult.save();
-
         return NextResponse.json({
             score: analysisResult.score,
             reasoning: analysisResult.reasoning,
         });
     } catch (error) {
+        console.log(error);
         return NextResponse.json({ error: 'Failed to analyze code' }, { status: 500 });
-    } finally {
-        await disconnectDatabase();
     }
+    //  finally {
+    //     await disconnectDatabase();
+    // }
 }
