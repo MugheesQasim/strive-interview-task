@@ -1,25 +1,3 @@
-## Introduction
-### Problem: 
-Code quality is essential for creating maintainable, efficient, and error-free software. High quality code reduces makes it easier to extend or modify features without breaking existing functionality. Clean, well-documented code enhances readability and prevents hair-pulling moments during debugging.
-### Solution:
-What if there is a web app which will automatically fetch code from your git repo and give you a rating of your code quality and a bonus reasoning also? Well, this app is exactly doing this. There are 3 options:
-
-Option 1: You can either give a file sha and it will fetch the code from the file, and provide you with a rating. 
-
-Option 2: You can provide a commit id and it will fetch all the files and show you the code quality of all the files in a user friendly UI.
-
-Option 3: You can provide a Pull Request Id and it will fetch all the related files and provide you their code quality in the result UI. 
-
-
-## Technologies
-FrontEnd: Next.JS
-
-BackEnd: Next.JS
-
-Database: MongoDB
-
-Apis: GitHub, OpenAI
-
 ## Getting Started
 Step 1: Create a .env file on your local. Provide your GitHub and Mistral AI tokens there. You can get tokens from the following links:
 
@@ -58,6 +36,29 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Introduction
+### Problem: 
+Code quality is essential for creating maintainable, efficient, and error-free software. High quality code reduces makes it easier to extend or modify features without breaking existing functionality. Clean, well-documented code enhances readability and prevents hair-pulling moments during debugging.
+### Solution:
+What if there is a web app which will automatically fetch code from your git repo and give you a rating of your code quality and a bonus reasoning also? Well, this app is exactly doing this. There are 3 options:
+
+Option 1: You can either give a file sha and it will fetch the code from the file, and provide you with a rating. 
+
+Option 2: You can provide a commit id and it will fetch all the files and show you the code quality of all the files in a user friendly UI.
+
+Option 3: You can provide a Pull Request Id and it will fetch all the related files and provide you their code quality in the result UI. 
+
+
+## Technologies
+FrontEnd: Next.JS
+
+BackEnd: Next.JS
+
+Database: MongoDB
+
+Apis: GitHub, OpenAI
+
 
 ## Time Frame
 ~10-13 hours
