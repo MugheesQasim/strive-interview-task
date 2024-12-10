@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 interface File {
@@ -13,21 +13,34 @@ interface Result {
   score?: number;
   reasoning?: string;
   error?: string;
-}
+};
 
-const ResultPage: React.FC = () => {
+// Separate the logic into its own component
+const ResultContent: React.FC = () => {
   const searchParams = useSearchParams();
 
-  const repoOwner = searchParams.get('repoOwner');
-  const repoName = searchParams.get('repoName');
-  const sha = searchParams.get('sha');
+  const [repoOwner, setRepoOwner] = useState<string | null>(null);
+  const [repoName, setRepoName] = useState<string | null>(null);
+  const [sha, setSha] = useState<string | null>(null);
 
   const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    const owner = searchParams.get('repoOwner');
+    const name = searchParams.get('repoName');
+    const shaParam = searchParams.get('sha');
+
+    if (owner && name && shaParam) {
+      setRepoOwner(owner);
+      setRepoName(name);
+      setSha(shaParam);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     if (repoOwner && repoName && sha) {
-      fetchCommitDetails(repoOwner as string, repoName as string, sha as string);
+      fetchCommitDetails(repoOwner, repoName, sha);
     }
   }, [repoOwner, repoName, sha]);
 
@@ -35,9 +48,7 @@ const ResultPage: React.FC = () => {
     try {
       const response = await fetch('/api/getCommitRating', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           repoOwner,
           repoName,
@@ -45,7 +56,6 @@ const ResultPage: React.FC = () => {
         }),
       });
       const data = await response.json();
-
       setResult(data);
     } catch (error) {
       setResult({
@@ -81,11 +91,6 @@ const ResultPage: React.FC = () => {
                   <span>{file.filename}</span>
                   <span className="text-sm text-gray-500">{file.status}</span>
                 </div>
-                {!result.error && (
-                  <div className="mt-2 p-2 bg-gray-100 rounded-md">
-                    <p>File content will be here</p>
-                  </div>
-                )}
               </li>
             ))}
           </ul>
@@ -100,6 +105,15 @@ const ResultPage: React.FC = () => {
         </div>
       )}
     </div>
+  );
+};
+
+// Wrap the logic with suspense fallback
+const ResultPage: React.FC = () => {
+  return (
+    <Suspense fallback={<div>Loading Search Params...</div>}>
+      <ResultContent />
+    </Suspense>
   );
 };
 

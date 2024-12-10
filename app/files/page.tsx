@@ -39,6 +39,7 @@ const Files: React.FC = () => {
             });
 
             if (!response.ok) {
+                console.log(response)
                 throw new Error('Error fetching code analysis');
             }
 
