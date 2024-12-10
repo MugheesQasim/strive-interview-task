@@ -7,11 +7,7 @@ let db: any;
 
 export const connectToDatabase = async () => {
   if (!mongoServer) {
-    mongoServer = await MongoMemoryServer.create({
-      instance: {
-        dbPath: '/tmp/mongo-db',
-      },
-    });
+    mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
     client = new MongoClient(uri);
     await client.connect();
